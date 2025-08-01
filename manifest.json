@@ -10,16 +10,13 @@
   },
   "permissions": ["activeTab"],
   "host_permissions": [
-    "https://chat.openai.com/*",
     "https://chatgpt.com/*",
-    "http://127.0.0.1:8000/*",
     "https://flask-proxy-mcp-and-prompt-optimizer.onrender.com/*"
   ],
 
   "content_scripts": [
     {
       "matches": [
-        "https://chat.openai.com/*",
         "https://chatgpt.com/*"
       ],
       "js": ["content.js"],
