@@ -1,25 +1,34 @@
 {
   "manifest_version": 3,
-  "name": "ChatGPT Prompt Optimizer",
-  "description": "Adds a button on ChatGPT web site to optimize your prompts before sending it to ChatGPT.",
-  "version": "0.1.0",
+  "name": "Prompt Optimizer",
+  "description": "Adds an Optimize button on web based LLMs to improve your prompts before sending.",
+  "version": "1.0.0",
   "icons": {
     "16": "assets/icon16.png",
     "48": "assets/icon48.png",
     "128": "assets/icon128.png"
   },
-  "permissions": ["activeTab"],
+  "permissions": [
+    "activeTab"
+  ],
   "host_permissions": [
     "https://chatgpt.com/*",
+    "https://chat.openai.com/*",
+    "https://claude.ai/*",
+    "https://gemini.google.com/*",
     "https://flask-proxy-mcp-and-prompt-optimizer.onrender.com/*"
   ],
-
   "content_scripts": [
     {
       "matches": [
-        "https://chatgpt.com/*"
+        "https://chatgpt.com/*",
+        "https://chat.openai.com/*",
+        "https://claude.ai/*",
+        "https://gemini.google.com/*"
       ],
-      "js": ["content.js"],
+      "js": [
+        "content.js"
+      ],
       "run_at": "document_idle"
     }
   ]
