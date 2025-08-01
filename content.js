@@ -1,5 +1,22 @@
 console.log("🚀 [StubOptimizer] content_v1.js loaded");
 
+// --- New Logic: Detect user interaction ---
+let userHasInteracted = false;
+const setUserInteracted = () => {
+  userHasInteracted = true;
+  // Clean up listeners once we know the user is active
+  window.removeEventListener('keydown', setUserInteracted, true);
+  window.removeEventListener('mousedown', setUserInteracted, true);
+};
+
+// Listen for the first key press or mouse click as a sign of user activity
+window.addEventListener('keydown', setUserInteracted, { once: true, capture: true });
+window.addEventListener('mousedown', setUserInteracted, { once: true, capture: true });
+
+
+// A flag to ensure we only clear the input once per page load
+let hasClearedOnLoad = false;
+
 // Selectors & IDs
 const SEND_BTN_SELECTOR   = 'button[data-testid="send-button"]';
 const INPUT_DIV_SELECTOR  = 'div[contenteditable="true"]';
@@ -8,17 +25,24 @@ const BTN_ID              = 'stub-optimizer-btn';
 const poll = setInterval(() => {
   const sendBtn = document.querySelector(SEND_BTN_SELECTOR);
   if (!sendBtn) return;
-  clearInterval(poll);
 
-  // 1) Clear any pre-existing text in the prompt box
+  // We found the button, so stop checking and clean up listeners
+  clearInterval(poll);
+  window.removeEventListener('keydown', setUserInteracted, true);
+  window.removeEventListener('mousedown', setUserInteracted, true);
+
+
   const inputDiv = document.querySelector(INPUT_DIV_SELECTOR);
-  if (inputDiv && inputDiv.innerText.trim() !== "") {
-    console.log("🚀 [StubOptimizer] Clearing stale input");
+
+  // 1) Clear pre-existing text ONLY if the user has NOT interacted with the page
+  if (!userHasInteracted && !hasClearedOnLoad && inputDiv && inputDiv.innerText.trim() !== "") {
+    console.log("🚀 [StubOptimizer] No user interaction detected. Clearing stale input.");
     inputDiv.innerText = "";
     inputDiv.dispatchEvent(new Event("input", { bubbles: true }));
+    hasClearedOnLoad = true;
   }
 
-  // 2) Inject our Optimize button (once)
+  // 2) Inject our Optimize button (if it's not already there)
   if (!document.getElementById(BTN_ID)) {
     console.log("🚀 [StubOptimizer] Found send-button – injecting Optimize button");
     const btn = document.createElement("button");
@@ -41,9 +65,9 @@ const poll = setInterval(() => {
 }, 300);
 
 
-// Replace stubOptimize with a real fetch to your local proxy
+// Replace stubOptimize with a real fetch to your proxy
 async function stubOptimize(promptText) {
-  console.log("🚀 [StubOptimizer] Calling local proxy with:", promptText);
+  console.log("🚀 [StubOptimizer] Calling the proxy to access the MCP prompt optimizer tool with:", promptText);
   const res = await fetch("https://flask-proxy-mcp-and-prompt-optimizer.onrender.com/optimize", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -82,7 +106,6 @@ async function onOptimizeClick() {
   try {
     const optimized = await stubOptimize(originalPrompt);
     console.log("🚀 [StubOptimizer] Proxy returned:", optimized);
-
     // Replace the contentEditable’s text
     inputDiv.innerText = optimized;
     // Dispatch an input event so React notices
