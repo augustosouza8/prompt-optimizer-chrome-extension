@@ -13,7 +13,6 @@
   ],
   "host_permissions": [
     "https://chatgpt.com/*",
-    "https://chat.openai.com/*",
     "https://claude.ai/*",
     "https://gemini.google.com/*",
     "https://flask-proxy-mcp-and-prompt-optimizer.onrender.com/*"
@@ -21,13 +20,28 @@
   "content_scripts": [
     {
       "matches": [
-        "https://chatgpt.com/*",
-        "https://chat.openai.com/*",
-        "https://claude.ai/*",
+        "https://chatgpt.com/*"
+      ],
+      "js": [
+        "chatgpt-optimizer-content.js"
+      ],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "https://claude.ai/*"
+      ],
+      "js": [
+        "claude-optimizer-content.js"
+      ],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
         "https://gemini.google.com/*"
       ],
       "js": [
-        "content.js"
+        "gemini-optimizer-content.js"
       ],
       "run_at": "document_idle"
     }
