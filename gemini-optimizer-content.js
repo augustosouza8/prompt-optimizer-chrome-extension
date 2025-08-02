@@ -1,114 +1,102 @@
-// Gemini optimizer content script (lean, single-purpose)
-// Injects an "Optimize" button next to Gemini's Send button and optimizes the prompt via external proxy.
-
 (function() {
-  console.log('Gemini optimizer loaded');
+  console.log('🚀 [Prompt Optimizer] loaded for Gemini');
 
-  // Track first user interaction to avoid clearing typed text
+  // --- Track first keypress/click to avoid clearing typed text ---
   let userInteracted = false;
   const markInteracted = () => { userInteracted = true; };
-  window.addEventListener('keydown', markInteracted, { once: true, capture: true });
+  window.addEventListener('keydown',  markInteracted, { once: true, capture: true });
   window.addEventListener('mousedown', markInteracted, { once: true, capture: true });
 
-  // Selectors
+  // --- Selectors and state ---
   const SEND_BTN_SELECTOR = '.send-button-container';
-  const INPUT_SELECTOR = '.ql-editor.textarea.new-input-ui';
-  const OPT_BTN_ID = 'gemini-optimizer-btn';
+  const INPUT_SELECTOR     = '.ql-editor.textarea.new-input-ui';
+  const OPT_BTN_ID         = 'gemini-optimizer-btn';
+  let promptEl    = null;
   let clearedOnce = false;
 
-  // Helper: find the prompt editor element
-  function getPromptElement() {
-    const el = document.querySelector(INPUT_SELECTOR);
-    if (el) return el;
-    throw new Error('Prompt input not found');
+  // --- Call proxy to optimize prompt ---
+  async function optimize(promptText) {
+    console.log('🚀 [Prompt Optimizer]', 'Sending prompt to proxy:', promptText);
+    const res = await fetch(
+      'https://flask-proxy-mcp-and-prompt-optimizer.onrender.com/optimize',
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: promptText })
+      }
+    );
+    if (!res.ok) throw new Error(`Proxy error ${res.status}`);
+    const data = await res.json();
+    if (!data.optimized_prompt) throw new Error('Missing optimized_prompt');
+    return data.optimized_prompt;
   }
 
-  // Dispatch input to update editor
-  function dispatchInput(el) {
-    const ev = new InputEvent('input', { bubbles: true });
-    el.dispatchEvent(ev);
-  }
-
-  // Call proxy to optimize prompt
-  async function optimizePrompt(text) {
-    const res = await fetch('https://flask-proxy-mcp-and-prompt-optimizer.onrender.com/optimize', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ prompt: text })
-    });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const j = await res.json();
-    if (!j.optimized_prompt) throw new Error('No optimized_prompt in response');
-    return j.optimized_prompt;
-  }
-
-  // Handler for Optimize button
+  // --- Handle Optimize button click ---
   async function onOptimize() {
     const btn = document.getElementById(OPT_BTN_ID);
-    btn.disabled = true;
-    const orig = promptEl.textContent.trim();
-    btn.textContent = 'Optimizing...';
+    btn.disabled  = true;
+    btn.innerText = 'Optimizing…';
+
+    if (!promptEl) {
+      console.error('🚀 [Prompt Optimizer]', 'Input not found');
+      btn.innerText = 'Error';
+      setTimeout(() => {
+        btn.innerText = 'Optimize';
+        btn.disabled = false;
+      }, 2000);
+      return;
+    }
+
+    const original = promptEl.textContent.trim();
+    console.log('🚀 [Prompt Optimizer]', 'Original:', original);
 
     try {
-      const optimized = await optimizePrompt(orig);
+      const optimized = await optimize(original);
+      console.log('🚀 [Prompt Optimizer]', 'Optimized:', optimized);
       promptEl.textContent = optimized;
-      dispatchInput(promptEl);
-      btn.textContent = 'Optimize';
-    } catch (err) {
-      console.error(err);
-      btn.textContent = 'Error';
-      setTimeout(() => { btn.textContent = 'Optimize'; }, 2000);
+      promptEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
+    } catch (error) {
+      console.error('🚀 [Prompt Optimizer]', 'Failed:', error);
+      btn.innerText = 'Error';
+      setTimeout(() => { btn.innerText = 'Optimize'; }, 2000);
     } finally {
-      btn.disabled = false;
+      btn.disabled  = false;
+      btn.innerText = 'Optimize';
     }
   }
 
-  let promptEl;
-
-  // Poll for Send button, then inject
-  const interval = setInterval(() => {
+  // --- Wait for Send button and inject Optimize button ---
+  const checker = setInterval(() => {
     const sendBtn = document.querySelector(SEND_BTN_SELECTOR);
     if (!sendBtn) return;
-    clearInterval(interval);
+    clearInterval(checker);
 
-    // Remove interaction listeners
-    window.removeEventListener('keydown', markInteracted, true);
-    window.removeEventListener('mousedown', markInteracted, true);
-
-    // Locate prompt editor and clear prefill if needed
-    try {
-      promptEl = getPromptElement();
-      if (!userInteracted && promptEl.textContent.trim() && !clearedOnce) {
-        promptEl.textContent = '';
-        dispatchInput(promptEl);
-        clearedOnce = true;
-      }
-    } catch (e) {
-      console.warn(e.message);
+    promptEl = document.querySelector(INPUT_SELECTOR);
+    if (promptEl && !userInteracted && !clearedOnce && promptEl.textContent.trim()) {
+      console.log('🚀 [Prompt Optimizer]', 'Clearing pre-filled text');
+      promptEl.textContent = '';
+      promptEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
+      clearedOnce = true;
     }
 
-    // Inject Optimize button
     if (!document.getElementById(OPT_BTN_ID)) {
-      const optBtn = document.createElement('button');
-      optBtn.id = OPT_BTN_ID;
-      optBtn.textContent = 'Optimize';
-      // Copy styling from Send button container
-      // optBtn.className = sendBtn.className;
-      // optBtn.style.marginRight = '8px';
-
-      // override more properties directly
-      optBtn.style.margin = '0 8px';         // top/bottom 0, left/right 8px
-      optBtn.style.backgroundColor = 'transparent';
-      optBtn.style.border = 'none';
-      optBtn.style.color = '#111827';
-      // optBtn.style.borderRadius = '6px';
-
-
-
-      optBtn.addEventListener('click', onOptimize);
-
-      // Insert before the Send button container
-      sendBtn.parentNode.insertBefore(optBtn, sendBtn);
+      console.log('🚀 [Prompt Optimizer]', 'Injecting Optimize button');
+      const btn = document.createElement('button');
+      btn.id        = OPT_BTN_ID;
+      btn.type      = 'button';
+      btn.innerText = 'Optimize';
+      Object.assign(btn.style, {
+        marginRight:  '8px',
+        padding:      '0 12px',
+        border:       '1px solid var(--color-border-primary)',
+        borderRadius: '4px',
+        background:   'var(--color-bg-secondary)',
+        color:        'var(--color-text-primary)',
+        fontSize:     '14px',
+        cursor:       'pointer'
+      });
+      sendBtn.parentNode.insertBefore(btn, sendBtn);
+      btn.addEventListener('click', onOptimize);
     }
   }, 300);
 })();

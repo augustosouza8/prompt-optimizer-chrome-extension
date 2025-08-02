@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Prompt Optimizer",
-  "description": "Adds an Optimize button on web-based LLMs to improve your prompts before sending.",
+  "description": "Adds an Optimize button on web based LLMs to improve your prompts before sending.",
   "version": "1.0.0",
   "icons": {
     "16": "assets/icon16.png",
@@ -12,15 +12,15 @@
     "activeTab"
   ],
   "host_permissions": [
-    "*://chatgpt.com/*",
-    "*://claude.ai/*",
-    "*://gemini.google.com/*",
+    "https://chatgpt.com/*",
+    "https://claude.ai/*",
+    "https://gemini.google.com/*",
     "https://flask-proxy-mcp-and-prompt-optimizer.onrender.com/*"
   ],
   "content_scripts": [
     {
       "matches": [
-        "*://chatgpt.com/*"
+        "https://chatgpt.com/*"
       ],
       "js": [
         "chatgpt-optimizer-content.js"
@@ -29,7 +29,7 @@
     },
     {
       "matches": [
-        "*://claude.ai/*"
+        "https://claude.ai/*"
       ],
       "js": [
         "claude-optimizer-content.js"
@@ -38,7 +38,7 @@
     },
     {
       "matches": [
-        "*://gemini.google.com/*"
+        "https://gemini.google.com/*"
       ],
       "js": [
         "gemini-optimizer-content.js"
