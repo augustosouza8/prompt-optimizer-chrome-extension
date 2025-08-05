@@ -2,15 +2,12 @@
   "manifest_version": 3,
   "name": "Prompt Optimizer",
   "description": "Adds an Optimize button on web-based LLMs to improve your prompts before sending.",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "icons": {
     "16": "assets/icon16.png",
     "48": "assets/icon48.png",
     "128": "assets/icon128.png"
   },
-  "permissions": [
-    "activeTab"
-  ],
   "host_permissions": [
     "*://chatgpt.com/*",
     "*://claude.ai/*",
