@@ -18,7 +18,7 @@
   async function optimize(promptText) {
     console.log('🚀 [Prompt Optimizer]', 'Sending prompt to proxy:', promptText);
     const res = await fetch(
-      'https://flask-proxy-mcp-and-prompt-optimizer.onrender.com/optimize',
+      'https://prompt-optimizer-web-app.onrender.com/optimize',
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

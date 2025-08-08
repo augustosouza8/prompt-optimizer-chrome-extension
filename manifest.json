@@ -12,7 +12,7 @@
     "*://chatgpt.com/*",
     "*://claude.ai/*",
     "*://gemini.google.com/*",
-    "https://flask-proxy-mcp-and-prompt-optimizer.onrender.com/*"
+    "*://prompt-optimizer-web-app.onrender.com/*"
   ],
   "content_scripts": [
     {
