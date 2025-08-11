@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Prompt Optimizer",
   "description": "Adds an Optimize button on web-based LLMs to improve your prompts before sending.",
-  "version": "1.0.1",
+  "version": "1.0.3",
   "icons": {
     "16": "assets/icon16.png",
     "48": "assets/icon48.png",
@@ -12,7 +12,7 @@
     "*://chatgpt.com/*",
     "*://claude.ai/*",
     "*://gemini.google.com/*",
-    "*://prompt-optimizer-web-app.onrender.com/*"
+    "https://prompt-optimizer-web-app.onrender.com/*"
   ],
   "content_scripts": [
     {
